@@ -1,8 +1,8 @@
 # GTFS Query Lab
 
-An interactive tool for loading real transit feeds and exploring SQL query optimization in the browser — no server required.
+An interactive SQL optimization workbench that runs entirely in the browser — no server required. Load any real GTFS transit feed and explore how query choices, indexes, and join order affect execution time on production-scale data.
 
-Built as a portfolio piece to demonstrate practical knowledge of query performance: indexes, join ordering, spatial filtering, and calendar resolution on production-scale GTFS data.
+Built as a portfolio piece to demonstrate practical knowledge of query performance on real-world datasets.
 
 **Live demo:** _coming soon (Vercel)_
 
@@ -10,22 +10,36 @@ Built as a portfolio piece to demonstrate practical knowledge of query performan
 
 ## What it does
 
-GTFS (General Transit Feed Specification) is the open data format used by thousands of transit agencies worldwide. A single feed can contain millions of rows — Montreal's STM feed has ~14 million stop_time records alone.
+GTFS (General Transit Feed Specification) is the open data format used by thousands of transit agencies worldwide. A single feed can contain millions of rows — Montreal's STM feed has ~14 million `stop_times` records alone.
 
 This app loads a GTFS `.zip` entirely in the browser using [sql.js](https://sql.js.org/) (SQLite compiled to WebAssembly) and demonstrates how query choices affect real execution time on that data.
 
-### Two modes
+### Free Query Editor
 
-**Free query editor** — write any SQL against the loaded feed and see results with timing.
+Write any SQL against the loaded feed and immediately see:
 
-**Scenario lab** — four curated slow vs. fast query pairs, each with a plain-English explanation of why the faster version wins:
+- **Execution plan** — the full `EXPLAIN QUERY PLAN` tree with colour-coded operation badges (red SCAN, green SEARCH, amber SORT, blue CTE), scan bars proportional to table size, and a rows-read-per-result ratio
+- **Optimization hints** — a rule-based engine inspects the plan and flags full table scans, correlated subqueries, and missing `LIMIT` clauses; detected scan columns get a one-click *Create index* action
+- **Index workshop** — create indexes by picking table and column from dropdowns, drop them individually, and re-run your query to watch the plan change from SCAN to SEARCH
+- **Query history** — every query is logged with timing, row count, and a label; click any entry to expand the full SQL
+- `CREATE INDEX` / `DROP INDEX` statements run cleanly and report execution time without breaking the plan panel
 
-| # | Scenario | Optimization technique |
-|---|----------|------------------------|
-| 1 | Filtering stop times | Index on `stop_times(trip_id)` |
-| 2 | Route lookup | Filter before join, not after |
-| 3 | Nearest stops | Bounding-box spatial pre-filter |
-| 4 | Is this trip running today? | Calendar + `calendar_dates` resolution |
+### Scenario Lab
+
+Four curated slow vs. fast query pairs, each with a side-by-side execution plan, speedup badge, and plain-English explanation:
+
+| # | Scenario | Optimization |
+|---|----------|--------------|
+| 1 | Look up stops for a trip | Index on `stop_times(trip_id)` — SCAN → SEARCH |
+| 2 | Count trips per route | Aggregate before joining — correlated subquery → CTE |
+| 3 | Find stops near a location | Bounding-box pre-filter before distance math |
+| 4 | Check which trips run today | Materialise active services once vs per-row subqueries |
+
+User-created indexes are automatically dropped before each scenario run to keep the comparisons clean.
+
+### Schema explorer
+
+Click any table name in the Feed Stats panel to expand its column list — useful when writing queries in the free editor.
 
 ---
 
@@ -64,15 +78,29 @@ Then open [http://localhost:5173](http://localhost:5173) and upload any GTFS `.z
 ```
 src/
   contexts/
-    DBContext.tsx      # React context: db instance, loading state, progress, error
+    DBContext.tsx          # db instance, loading state, progress, table row counts
   components/
-    FeedLoader.tsx     # Drag & drop upload with progress bar; optional sample feed via env var
-    FeedStats.tsx      # Row counts per table, sortable by name or count
+    FeedLoader.tsx         # drag-and-drop upload with progress bar
+    FeedStats.tsx          # row counts per table, sortable; click to expand column list
+    QueryComparator.tsx    # slow/fast runner — drops user indexes, shows speedup badge
+    ExecutionPlanPanel.tsx # EXPLAIN QUERY PLAN tree: badges, scan bars, timing, rows ratio
+    FreeQueryEditor.tsx    # query editor + plan + hints + Indexes/History sub-tabs
+    IndexInspector.tsx     # live index list with create (table+column form) and drop actions
+    QueryHistory.tsx       # accordion log of every query run with timing and full SQL
+    ScenarioPanel.tsx      # wraps QueryComparator with scenario description
   lib/
-    gtfsLoader.ts      # Unzips feed, parses CSVs, loads into sql.js via Web Worker
-    queryRunner.ts     # Wraps db.query() with performance timing
+    gtfsLoader.ts          # unzips feed, parses CSVs, loads into sql.js via Web Worker
+    queryRunner.ts         # timing wrapper + EXPLAIN QUERY PLAN parser (PlanNode tree)
+    queryHistory.ts        # module-level pub/sub store for query history
+    scenarios.ts           # re-exports the four scenario definitions
+    types.ts               # Scenario interface
+  scenarios/
+    stopTimesIndex.ts      # scenario 1: index on stop_times
+    joinOrder.ts           # scenario 2: aggregate before joining
+    spatialBoundingBox.ts  # scenario 3: bounding-box spatial filter
+    calendarService.ts     # scenario 4: materialise active services
   workers/
-    db.worker.ts       # Web Worker: owns all sql.js state, handles load + query messages
+    db.worker.ts           # Web Worker: owns all sql.js state, handles load + query messages
   App.tsx
 ```
 
@@ -80,18 +108,13 @@ src/
 
 `loadGtfsFeed(file)` → Web Worker → JSZip unzip → CSV parse → `INSERT` into SQLite tables → returns a `DbHandle`
 
-All CSV columns are stored as `TEXT` (schema is derived from each file's headers at load time), making the loader work with any GTFS feed regardless of optional fields. Numeric comparisons in queries use SQLite's implicit casting.
+All CSV columns are stored as `TEXT` (schema derived from each file's headers at load time), so the loader works with any GTFS feed regardless of optional fields. Numeric comparisons use SQLite's implicit casting.
 
-`runQuery(handle, sql)` → worker `postMessage` → `db.exec()` with `performance.now()` timing → `{ results, durationMs }`
+`runQueryWithPlan(handle, sql)` → runs `EXPLAIN QUERY PLAN` and the query in parallel → parses the flat plan rows into a `PlanNode` tree → returns `{ results, durationMs, plan }`
 
-### Sample feed
+### Plan node classification
 
-To enable the one-click "Load sample feed" button, add to `.env.local`:
-
-```
-VITE_SAMPLE_FEED_URL=https://your-cdn.com/gtfs-sample.zip
-VITE_SAMPLE_FEED_NAME=STM Montreal
-```
+The parser recognises SQLite 3.39+ output formats including `CO-ROUTINE` (lazy CTE, mapped to the same CTE badge as `MATERIALIZE`) and `CORRELATED SCALAR SUBQUERY` (mapped to the SUBQUERY badge).
 
 ---
 
@@ -104,13 +127,20 @@ npm run preview   # preview the production build locally
 
 Deployed on Vercel — push to `main` triggers a new deploy.
 
+### Sample feed (optional)
+
+To enable the one-click "Load sample feed" button, add to `.env.local`:
+
+```
+VITE_SAMPLE_FEED_URL=https://your-cdn.com/gtfs-sample.zip
+VITE_SAMPLE_FEED_NAME=STM Montreal
+```
+
 ---
 
-## What I learned about GTFS at scale
+## Key findings at scale
 
-_Full write-up coming in Day 9_ — short version:
-
-- `stop_times` is always the largest table by far (often 10–100× bigger than `trips`)
-- Without an index, a `WHERE trip_id = ?` scan on 14M rows takes ~800ms in WASM SQLite; with an index it drops to ~2ms
-- Calendar resolution is deceptively complex: you can't just query `calendar` — you have to check `calendar_dates` for exceptions (a service might run on a holiday it normally skips, or be cancelled on a day it normally runs)
-- Bounding-box filtering (`WHERE stop_lat BETWEEN ? AND ?`) before computing distances is the standard "poor man's spatial index" — it cuts the candidate set from 10k stops to ~50 before any math happens
+- `stop_times` is always the largest table (often 10–100× bigger than `trips`)
+- Without an index, `WHERE trip_id = ?` on 14 M rows takes ~800 ms in WASM SQLite; with `idx_st_trip` it drops to ~2 ms
+- Calendar resolution requires checking both `calendar` (weekly pattern) and `calendar_dates` (exceptions) — a correlated subquery against both re-scans thousands of rows per trip
+- A ±0.05° bounding box (`WHERE stop_lat BETWEEN ? AND ?`) before distance math cuts the candidate set from 10 K stops to ~50 before any floating-point computation runs

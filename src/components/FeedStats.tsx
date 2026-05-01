@@ -19,7 +19,7 @@ function SortButton({
 }) {
   return (
     <button
-      onClick={() => onClick(sortKey)}
+      onClick={(e) => { e.stopPropagation(); onClick(sortKey); }}
       className={[
         'flex items-center gap-1 text-xs font-semibold uppercase tracking-wide transition-colors',
         active
@@ -39,9 +39,11 @@ export function FeedStats() {
   const [loadingStats, setLoadingStats] = useState(false);
   const [sortKey, setSortKey] = useState<SortKey>('default');
   const [sortDir, setSortDir] = useState<SortDir>('asc');
+  const [expandedTable, setExpandedTable] = useState<string | null>(null);
+  const [columnCache, setColumnCache] = useState<Record<string, string[]>>({});
 
   useEffect(() => {
-    if (!db) { setStats([]); return; }
+    if (!db) { setStats([]); setExpandedTable(null); setColumnCache({}); return; }
     setLoadingStats(true);
 
     async function fetchStats() {
@@ -61,6 +63,19 @@ export function FeedStats() {
 
     fetchStats();
   }, [db]);
+
+  async function handleRowClick(name: string) {
+    if (expandedTable === name) {
+      setExpandedTable(null);
+      return;
+    }
+    setExpandedTable(name);
+    if (!columnCache[name] && db) {
+      const result = await runQuery(db, `PRAGMA table_info("${name}")`);
+      const cols = (result.results[0]?.values ?? []).map((row) => String(row[1]));
+      setColumnCache((prev) => ({ ...prev, [name]: cols }));
+    }
+  }
 
   function handleSortClick(key: SortKey) {
     if (sortKey === key) {
@@ -128,28 +143,74 @@ export function FeedStats() {
           </tr>
         </thead>
         <tbody>
-          {sorted.map(({ name, rows }, i) => (
-            <tr
-              key={name}
-              className={[
-                'border-b border-[var(--color-border)] last:border-0',
-                i % 2 !== 0 ? 'bg-[var(--color-subtle)]' : '',
-                name === 'stop_times' ? 'font-semibold' : '',
-              ].join(' ')}
-            >
-              <td className={[
-                'px-5 py-2.5 font-mono text-sm',
-                name === 'stop_times'
-                  ? 'text-[var(--color-brand-dark)]'
-                  : 'text-[var(--color-text-primary)]',
-              ].join(' ')}>
-                {name}
-              </td>
-              <td className="px-5 py-2.5 text-right tabular-nums text-[var(--color-text-secondary)]">
-                {rows.toLocaleString()}
-              </td>
-            </tr>
-          ))}
+          {sorted.map(({ name, rows }, i) => {
+            const isExpanded = expandedTable === name;
+            const cols = columnCache[name];
+            return (
+              <>
+                <tr
+                  key={name}
+                  onClick={() => handleRowClick(name)}
+                  className={[
+                    'border-b border-[var(--color-border)] cursor-pointer transition-colors',
+                    isExpanded
+                      ? 'bg-[var(--color-brand-light)]'
+                      : i % 2 !== 0
+                        ? 'bg-[var(--color-subtle)] hover:bg-[var(--color-brand-light)]'
+                        : 'hover:bg-[var(--color-brand-light)]',
+                    name === 'stop_times' ? 'font-semibold' : '',
+                  ].join(' ')}
+                >
+                  <td className="px-5 py-2.5 font-mono text-sm">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={[
+                          'text-[10px] transition-transform duration-150',
+                          isExpanded ? 'rotate-90' : '',
+                          'text-[var(--color-text-muted)]',
+                        ].join(' ')}
+                      >
+                        ▶
+                      </span>
+                      <span className={
+                        name === 'stop_times'
+                          ? 'text-[var(--color-brand-dark)]'
+                          : 'text-[var(--color-text-primary)]'
+                      }>
+                        {name}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-5 py-2.5 text-right tabular-nums text-[var(--color-text-secondary)]">
+                    {rows.toLocaleString()}
+                  </td>
+                </tr>
+
+                {isExpanded && (
+                  <tr key={`${name}-cols`} className="border-b border-[var(--color-border)] bg-[var(--color-brand-light)]">
+                    <td colSpan={2} className="px-5 py-3">
+                      {!cols ? (
+                        <span className="text-xs text-[var(--color-text-muted)] animate-pulse">
+                          loading columns…
+                        </span>
+                      ) : (
+                        <div className="flex flex-wrap gap-1.5">
+                          {cols.map((col) => (
+                            <span
+                              key={col}
+                              className="text-[11px] font-mono px-2 py-0.5 rounded-md bg-[var(--color-surface)] border border-[var(--color-border-strong)] text-[var(--color-text-secondary)]"
+                            >
+                              {col}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                )}
+              </>
+            );
+          })}
         </tbody>
       </table>
     </div>
