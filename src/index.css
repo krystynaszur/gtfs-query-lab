@@ -1,7 +1,31 @@
 @import "tailwindcss";
 
+@theme {
+  /* Transit-inspired green — adjust this one value to tune the whole app */
+  --color-brand:       #00C97B;
+  --color-brand-dark:  #009E62;
+  --color-brand-light: #E6FBF2;
+  --color-brand-muted: #B3F0D5;
+
+  /* Surface palette */
+  --color-surface:     #FFFFFF;
+  --color-subtle:      #F5F7FA;
+  --color-border:      #E4E8EF;
+  --color-border-strong: #C8D0DC;
+
+  /* Text */
+  --color-text-primary:   #0F1724;
+  --color-text-secondary: #5A6478;
+  --color-text-muted:     #8E97A8;
+
+  /* Code editor — keep dark for readability */
+  --color-code-bg:    #1A2235;
+  --color-code-text:  #E2E8F0;
+  --color-code-border:#2D3F5A;
+}
+
 :root {
-  color-scheme: light dark;
+  color-scheme: light;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -9,4 +33,6 @@
 
 body {
   margin: 0;
+  background-color: var(--color-subtle);
+  color: var(--color-text-primary);
 }

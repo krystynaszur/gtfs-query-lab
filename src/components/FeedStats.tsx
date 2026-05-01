@@ -15,26 +15,20 @@ const TABLE_ORDER = [
 function SortButton({
   label, sortKey, active, dir, onClick,
 }: {
-  label: string;
-  sortKey: SortKey;
-  active: boolean;
-  dir: SortDir;
-  onClick: (k: SortKey) => void;
+  label: string; sortKey: SortKey; active: boolean; dir: SortDir; onClick: (k: SortKey) => void;
 }) {
   return (
     <button
       onClick={() => onClick(sortKey)}
       className={[
-        'flex items-center gap-1 text-xs font-medium uppercase tracking-wide transition-colors',
+        'flex items-center gap-1 text-xs font-semibold uppercase tracking-wide transition-colors',
         active
-          ? 'text-blue-600 dark:text-blue-400'
-          : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-200',
+          ? 'text-[var(--color-brand-dark)]'
+          : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]',
       ].join(' ')}
     >
       {label}
-      <span className="text-[10px]">
-        {active ? (dir === 'asc' ? '▲' : '▼') : '⇅'}
-      </span>
+      <span className="text-[10px]">{active ? (dir === 'asc' ? '▲' : '▼') : '⇅'}</span>
     </button>
   );
 }
@@ -99,30 +93,29 @@ export function FeedStats() {
   if (!db) return null;
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-      <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
+    <div className="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] overflow-hidden shadow-sm">
+      <div className="px-5 py-4 border-b border-[var(--color-border)] flex items-center justify-between">
         <div>
-          <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Feed loaded</h2>
+          <h2 className="text-sm font-semibold text-[var(--color-text-primary)]">Feed loaded</h2>
           {feedName && (
-            <p className="text-xs text-gray-400 mt-0.5 font-mono">{feedName}</p>
+            <p className="text-xs text-[var(--color-text-muted)] mt-0.5 font-mono">{feedName}</p>
           )}
         </div>
         {loadingStats && (
-          <span className="text-xs text-gray-400 animate-pulse">counting rows…</span>
+          <span className="text-xs text-[var(--color-text-muted)] animate-pulse">counting rows…</span>
         )}
       </div>
 
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-gray-100 dark:border-gray-800">
+          <tr className="border-b border-[var(--color-border)] bg-[var(--color-subtle)]">
             <th className="px-5 py-2.5 text-left">
               <div className="flex items-center gap-3">
                 <SortButton label="Table" sortKey="name" active={sortKey === 'name'} dir={sortDir} onClick={handleSortClick} />
                 {sortKey !== 'default' && (
                   <button
                     onClick={() => { setSortKey('default'); setSortDir('asc'); }}
-                    className="text-[10px] text-gray-300 hover:text-gray-500 dark:hover:text-gray-300 transition-colors"
-                    title="Reset sort"
+                    className="text-[10px] text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] transition-colors"
                   >
                     reset
                   </button>
@@ -139,15 +132,22 @@ export function FeedStats() {
             <tr
               key={name}
               className={[
-                'border-b border-gray-50 dark:border-gray-800 last:border-0',
-                i % 2 === 0 ? '' : 'bg-gray-50 dark:bg-gray-800/40',
-                name === 'stop_times'
-                  ? 'font-semibold text-blue-600 dark:text-blue-400'
-                  : 'text-gray-700 dark:text-gray-300',
+                'border-b border-[var(--color-border)] last:border-0',
+                i % 2 !== 0 ? 'bg-[var(--color-subtle)]' : '',
+                name === 'stop_times' ? 'font-semibold' : '',
               ].join(' ')}
             >
-              <td className="px-5 py-2.5 font-mono">{name}</td>
-              <td className="px-5 py-2.5 text-right tabular-nums">{rows.toLocaleString()}</td>
+              <td className={[
+                'px-5 py-2.5 font-mono text-sm',
+                name === 'stop_times'
+                  ? 'text-[var(--color-brand-dark)]'
+                  : 'text-[var(--color-text-primary)]',
+              ].join(' ')}>
+                {name}
+              </td>
+              <td className="px-5 py-2.5 text-right tabular-nums text-[var(--color-text-secondary)]">
+                {rows.toLocaleString()}
+              </td>
             </tr>
           ))}
         </tbody>

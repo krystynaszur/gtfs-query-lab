@@ -1,17 +1,55 @@
+import { useState } from 'react';
 import { DBProvider, useDB } from './contexts/DBContext';
 import { FeedLoader } from './components/FeedLoader';
 import { FeedStats } from './components/FeedStats';
+import { FreeQueryEditor } from './components/FreeQueryEditor';
+import { ScenarioLab } from './components/ScenarioLab';
+
+type Tab = 'free' | 'scenarios';
+
+function TabNav({ active, onChange }: { active: Tab; onChange: (t: Tab) => void }) {
+  const tabs: { id: Tab; label: string }[] = [
+    { id: 'free', label: 'Free Query' },
+    { id: 'scenarios', label: 'Scenario Lab' },
+  ];
+  return (
+    <div className="flex gap-1 border-b border-[var(--color-border)]">
+      {tabs.map((t) => (
+        <button
+          key={t.id}
+          onClick={() => onChange(t.id)}
+          className={[
+            'px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors',
+            active === t.id
+              ? 'border-[var(--color-brand)] text-[var(--color-brand-dark)]'
+              : 'border-transparent text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]',
+          ].join(' ')}
+        >
+          {t.label}
+        </button>
+      ))}
+    </div>
+  );
+}
 
 function AppShell() {
   const { db, loadFeed } = useDB();
+  const [tab, setTab] = useState<Tab>('free');
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100">
-      <header className="border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
-        <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-base font-semibold tracking-tight">GTFS Query Lab</h1>
-            <p className="text-xs text-gray-400 mt-0.5">SQL query optimization on real transit data</p>
+    <div className="min-h-screen bg-[var(--color-subtle)]">
+      <header className="bg-[var(--color-surface)] border-b border-[var(--color-border)] shadow-sm">
+        <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-7 h-7 rounded-lg bg-[var(--color-brand)] flex items-center justify-center">
+              <span className="text-white text-xs font-bold">G</span>
+            </div>
+            <div>
+              <h1 className="text-sm font-semibold text-[var(--color-text-primary)] tracking-tight">
+                GTFS Query Lab
+              </h1>
+              <p className="text-xs text-[var(--color-text-muted)]">SQL optimization on real transit data</p>
+            </div>
           </div>
           {db && (
             <button
@@ -25,7 +63,7 @@ function AppShell() {
                 };
                 input.click();
               }}
-              className="text-xs text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+              className="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-brand-dark)] transition-colors font-medium"
             >
               Load different feed
             </button>
@@ -33,13 +71,16 @@ function AppShell() {
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-6 py-8">
+      <main className="max-w-5xl mx-auto px-6 py-8">
         {!db ? (
           <FeedLoader />
         ) : (
-          <div className="space-y-6">
+          <div className="flex flex-col gap-6">
             <FeedStats />
-            {/* Day 3+: QueryEditor and ScenarioLab go here */}
+            <div className="flex flex-col gap-4">
+              <TabNav active={tab} onChange={setTab} />
+              {tab === 'free' ? <FreeQueryEditor /> : <ScenarioLab />}
+            </div>
           </div>
         )}
       </main>

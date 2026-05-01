@@ -1,8 +1,6 @@
 import { useRef, useState, useCallback } from 'react';
 import { useDB } from '../contexts/DBContext';
 
-// To enable a one-click sample feed, set VITE_SAMPLE_FEED_URL in .env.local
-// e.g. VITE_SAMPLE_FEED_URL=https://your-cdn.com/gtfs-sample.zip
 const SAMPLE_FEED_URL = import.meta.env.VITE_SAMPLE_FEED_URL as string | undefined;
 const SAMPLE_FEED_NAME = import.meta.env.VITE_SAMPLE_FEED_NAME as string | undefined;
 
@@ -55,14 +53,16 @@ export function FeedLoader() {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center gap-4 py-24">
-        <p className="text-sm font-medium text-gray-500">{progress?.stage ?? 'Loading…'}</p>
-        <div className="w-72 h-2 bg-gray-200 rounded-full overflow-hidden">
+        <p className="text-sm font-medium text-[var(--color-text-secondary)]">
+          {progress?.stage ?? 'Loading…'}
+        </p>
+        <div className="w-72 h-2 bg-[var(--color-border)] rounded-full overflow-hidden">
           <div
-            className="h-full bg-blue-500 rounded-full transition-all duration-300"
+            className="h-full bg-[var(--color-brand)] rounded-full transition-all duration-300"
             style={{ width: `${progress?.percent ?? 0}%` }}
           />
         </div>
-        <p className="text-xs text-gray-400">{progress?.percent ?? 0}%</p>
+        <p className="text-xs text-[var(--color-text-muted)]">{progress?.percent ?? 0}%</p>
       </div>
     );
   }
@@ -74,11 +74,11 @@ export function FeedLoader() {
         tabIndex={0}
         aria-label="Upload GTFS feed"
         className={[
-          'w-full max-w-lg border-2 border-dashed rounded-xl p-12 text-center cursor-pointer',
-          'transition-colors duration-150 select-none',
+          'w-full max-w-lg border-2 border-dashed rounded-2xl p-14 text-center cursor-pointer',
+          'bg-[var(--color-surface)] transition-colors duration-150 select-none',
           isDragOver
-            ? 'border-blue-500 bg-blue-50 dark:bg-blue-950'
-            : 'border-gray-300 dark:border-gray-600 hover:border-blue-400 hover:bg-gray-50 dark:hover:bg-gray-800',
+            ? 'border-[var(--color-brand)] bg-[var(--color-brand-light)]'
+            : 'border-[var(--color-border-strong)] hover:border-[var(--color-brand)] hover:bg-[var(--color-brand-light)]',
         ].join(' ')}
         onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
         onDragLeave={() => setIsDragOver(false)}
@@ -93,19 +93,23 @@ export function FeedLoader() {
           className="hidden"
           onChange={(e) => handleFiles(e.target.files)}
         />
-        <div className="text-4xl mb-4">📦</div>
-        <p className="text-base font-medium text-gray-700 dark:text-gray-200">
-          Drop a GTFS <code className="text-sm bg-gray-100 dark:bg-gray-700 px-1 py-0.5 rounded">.zip</code> here
+        <div className="text-4xl mb-4">🚌</div>
+        <p className="text-base font-semibold text-[var(--color-text-primary)]">
+          Drop a GTFS{' '}
+          <code className="text-sm bg-[var(--color-subtle)] border border-[var(--color-border)] px-1.5 py-0.5 rounded font-mono">
+            .zip
+          </code>{' '}
+          here
         </p>
-        <p className="text-sm text-gray-400 mt-1">or click to browse</p>
+        <p className="text-sm text-[var(--color-text-muted)] mt-1">or click to browse</p>
       </div>
 
       {SAMPLE_FEED_URL && (
         <div className="mt-4 flex items-center gap-3">
-          <span className="text-sm text-gray-400">or</span>
+          <span className="text-sm text-[var(--color-text-muted)]">or</span>
           <button
             onClick={handleSampleFeed}
-            className="text-sm text-blue-600 dark:text-blue-400 hover:underline font-medium"
+            className="text-sm text-[var(--color-brand-dark)] hover:underline font-medium"
           >
             Load {SAMPLE_FEED_NAME ?? 'sample feed'}
           </button>
@@ -116,7 +120,7 @@ export function FeedLoader() {
         <p className="mt-4 text-sm text-red-500">{error ?? fetchError}</p>
       )}
 
-      <p className="mt-8 text-xs text-gray-400 max-w-sm text-center">
+      <p className="mt-8 text-xs text-[var(--color-text-muted)] max-w-sm text-center">
         All processing happens in your browser — no data is uploaded anywhere.
       </p>
     </div>
