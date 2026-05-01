@@ -63,22 +63,35 @@ Then open [http://localhost:5173](http://localhost:5173) and upload any GTFS `.z
 
 ```
 src/
+  contexts/
+    DBContext.tsx      # React context: db instance, loading state, progress, error
+  components/
+    FeedLoader.tsx     # Drag & drop upload with progress bar; optional sample feed via env var
+    FeedStats.tsx      # Row counts per table, sortable by name or count
   lib/
-    gtfsLoader.ts     # Unzips feed, parses CSVs, loads into sql.js via worker
-    queryRunner.ts    # Wraps db.query() with performance timing
+    gtfsLoader.ts      # Unzips feed, parses CSVs, loads into sql.js via Web Worker
+    queryRunner.ts     # Wraps db.query() with performance timing
   workers/
-    db.worker.ts      # Web Worker: owns all sql.js state, handles load + query messages
-  components/         # (Days 2–6)
+    db.worker.ts       # Web Worker: owns all sql.js state, handles load + query messages
   App.tsx
 ```
 
 ### Data pipeline
 
-`loadGtfsFeed(file)` →  Web Worker → JSZip unzip → CSV parse → `INSERT` into SQLite tables → returns a `DbHandle`
+`loadGtfsFeed(file)` → Web Worker → JSZip unzip → CSV parse → `INSERT` into SQLite tables → returns a `DbHandle`
 
 All CSV columns are stored as `TEXT` (schema is derived from each file's headers at load time), making the loader work with any GTFS feed regardless of optional fields. Numeric comparisons in queries use SQLite's implicit casting.
 
 `runQuery(handle, sql)` → worker `postMessage` → `db.exec()` with `performance.now()` timing → `{ results, durationMs }`
+
+### Sample feed
+
+To enable the one-click "Load sample feed" button, add to `.env.local`:
+
+```
+VITE_SAMPLE_FEED_URL=https://your-cdn.com/gtfs-sample.zip
+VITE_SAMPLE_FEED_NAME=STM Montreal
+```
 
 ---
 
