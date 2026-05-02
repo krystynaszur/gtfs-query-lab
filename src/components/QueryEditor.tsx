@@ -70,7 +70,7 @@ export function QueryEditor({
             onClick={() => onRun(sql)}
             disabled={loading || !sql.trim()}
             className={[
-              'px-4 py-1.5 rounded-lg text-sm font-semibold transition-colors',
+              'px-5 py-1.5 rounded-[49px] text-sm font-semibold transition-colors',
               loading || !sql.trim()
                 ? 'bg-[var(--color-border)] text-[var(--color-text-muted)] cursor-not-allowed'
                 : 'bg-[var(--color-brand)] hover:bg-[var(--color-brand-dark)] text-white',

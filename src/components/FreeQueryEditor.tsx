@@ -166,7 +166,7 @@ export function FreeQueryEditor() {
 
   return (
     <div className="flex flex-col gap-5">
-      <p className="text-sm text-[var(--color-text-muted)] leading-relaxed">
+      <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed">
         Write any SQL against the loaded GTFS feed. After each run the execution plan
         appears alongside your results — and the hint engine flags common performance
         issues automatically. You can also run <span className="font-mono">CREATE INDEX</span> and{' '}
@@ -246,8 +246,12 @@ export function FreeQueryEditor() {
             )}
           </div>
         ) : (
-          <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-subtle)] px-4 py-2.5">
-            <p className="text-xs text-[var(--color-text-muted)]">
+          <div className="rounded-xl border border-[var(--color-brand-muted)] bg-[var(--color-brand-light)] px-4 py-3 flex items-center gap-3">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 text-[var(--color-brand-dark)] shrink-0">
+              <circle cx="10" cy="10" r="8" />
+              <polyline points="7 10 9 12 13 8" />
+            </svg>
+            <p className="text-sm text-[var(--color-brand-dark)] font-medium">
               No obvious issues detected in this query's plan.
             </p>
           </div>

@@ -86,7 +86,7 @@ export function IndexInspector() {
         <button
           onClick={() => setShowCreate((v) => !v)}
           className={[
-            'text-xs font-semibold px-2 py-0.5 rounded transition-colors',
+            'text-xs font-semibold px-3 py-0.5 rounded-full transition-colors',
             showCreate
               ? 'bg-[var(--color-border)] text-[var(--color-text-muted)]'
               : 'bg-[var(--color-brand-light)] text-[var(--color-brand-dark)] hover:bg-[var(--color-brand-muted)]',
@@ -139,7 +139,7 @@ export function IndexInspector() {
             onClick={handleCreate}
             disabled={!newTable || !newColumn || creating}
             className={[
-              'w-full py-1.5 rounded-lg text-xs font-semibold transition-colors',
+              'w-full py-1.5 rounded-[49px] text-xs font-semibold transition-colors',
               !newTable || !newColumn || creating
                 ? 'bg-[var(--color-border)] text-[var(--color-text-muted)] cursor-not-allowed'
                 : 'bg-[var(--color-brand)] hover:bg-[var(--color-brand-dark)] text-white',
@@ -170,7 +170,7 @@ export function IndexInspector() {
               </div>
               <button
                 onClick={() => handleDrop(idx.name)}
-                className="text-[10px] text-[var(--color-text-muted)] hover:text-red-500 transition-colors shrink-0 mt-0.5"
+                className="text-sm font-medium text-[var(--color-text-muted)] hover:text-red-500 hover:bg-red-50 transition-colors shrink-0 px-2 py-0.5 rounded-full"
                 title="Drop this index"
               >
                 Drop

@@ -39,7 +39,7 @@ User-created indexes are automatically dropped before each scenario run to keep 
 
 ### Schema explorer
 
-Click any table name in the Feed Stats panel to expand its column list — useful when writing queries in the free editor.
+The feed header strip shows the file name and total row count at a glance. Click **Browse tables** to expand the full sortable table browser; click any table row to inspect its column list — useful when writing queries in the free editor.
 
 ---
 
@@ -81,7 +81,7 @@ src/
     DBContext.tsx          # db instance, loading state, progress, table row counts
   components/
     FeedLoader.tsx         # drag-and-drop upload with progress bar
-    FeedStats.tsx          # row counts per table, sortable; click to expand column list
+    FeedStats.tsx          # compact strip (feed name + row count) with expandable sortable table browser
     QueryComparator.tsx    # slow/fast runner — drops user indexes, shows speedup badge
     ExecutionPlanPanel.tsx # EXPLAIN QUERY PLAN tree: badges, scan bars, timing, rows ratio
     FreeQueryEditor.tsx    # query editor + plan + hints + Indexes/History sub-tabs

@@ -68,13 +68,13 @@ export function FeedLoader() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center py-16 px-4">
+    <div className="flex flex-col items-center justify-center py-8 px-4">
       <div
         role="button"
         tabIndex={0}
         aria-label="Upload GTFS feed"
         className={[
-          'w-full max-w-lg border-2 border-dashed rounded-2xl p-14 text-center cursor-pointer',
+          'w-full max-w-lg border-2 border-dashed rounded-2xl p-10 text-center cursor-pointer',
           'bg-[var(--color-surface)] transition-colors duration-150 select-none',
           isDragOver
             ? 'border-[var(--color-brand)] bg-[var(--color-brand-light)]'
@@ -93,15 +93,18 @@ export function FeedLoader() {
           className="hidden"
           onChange={(e) => handleFiles(e.target.files)}
         />
-        <div className="text-4xl mb-4">🚌</div>
-        <p className="text-base font-semibold text-[var(--color-text-primary)]">
+        <div className="text-5xl mb-4">🚌</div>
+        <p
+          className="text-lg font-semibold text-[var(--color-text-primary)]"
+          style={{ fontFamily: 'var(--font-display)' }}
+        >
           Drop a GTFS{' '}
-          <code className="text-sm bg-[var(--color-subtle)] border border-[var(--color-border)] px-1.5 py-0.5 rounded font-mono">
+          <code className="text-base bg-[var(--color-subtle)] border border-[var(--color-border)] px-1.5 py-0.5 rounded font-mono">
             .zip
           </code>{' '}
           here
         </p>
-        <p className="text-sm text-[var(--color-text-muted)] mt-1">or click to browse</p>
+        <p className="text-sm text-[var(--color-text-secondary)] mt-1.5">or click to browse</p>
       </div>
 
       {SAMPLE_FEED_URL && (
@@ -109,7 +112,7 @@ export function FeedLoader() {
           <span className="text-sm text-[var(--color-text-muted)]">or</span>
           <button
             onClick={handleSampleFeed}
-            className="text-sm text-[var(--color-brand-dark)] hover:underline font-medium"
+            className="text-sm text-[var(--color-brand-dark)] hover:underline font-semibold"
           >
             Load {SAMPLE_FEED_NAME ?? 'sample feed'}
           </button>
@@ -120,7 +123,7 @@ export function FeedLoader() {
         <p className="mt-4 text-sm text-red-500">{error ?? fetchError}</p>
       )}
 
-      <p className="mt-8 text-xs text-[var(--color-text-muted)] max-w-sm text-center">
+      <p className="mt-6 text-sm text-[var(--color-text-secondary)] max-w-sm text-center">
         All processing happens in your browser — no data is uploaded anywhere.
       </p>
     </div>

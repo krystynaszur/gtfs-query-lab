@@ -16,10 +16,10 @@ export function ScenarioLab() {
             key={s.id}
             onClick={() => setActiveId(s.id)}
             className={[
-              'flex-1 text-left px-4 py-3 rounded-xl border text-sm transition-colors',
+              'flex-1 text-left px-4 py-3 rounded-[49px] border text-sm transition-colors',
               activeId === s.id
-                ? 'border-[var(--color-brand)] bg-[var(--color-brand-light)] text-[var(--color-brand-dark)]'
-                : 'border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-secondary)] hover:border-[var(--color-brand-muted)] hover:text-[var(--color-text-primary)]',
+                ? 'border-[var(--color-transit-green-accent)] bg-[var(--color-transit-green-bg)] text-[var(--color-transit-green)]'
+                : 'border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-secondary)] hover:border-[var(--color-transit-green-accent)] hover:text-[var(--color-text-primary)]',
             ].join(' ')}
           >
             <span className="block text-xs text-[var(--color-text-muted)] mb-0.5">{ICONS[i]}</span>

@@ -153,7 +153,7 @@ export function QueryComparator({ slow, fast, before, setup, insight }: QueryCom
           onClick={handleRun}
           disabled={loading || !db}
           className={[
-            'px-5 py-2 rounded-lg text-sm font-semibold transition-colors',
+            'px-6 py-2 rounded-[49px] text-sm font-semibold transition-colors',
             loading || !db
               ? 'bg-[var(--color-border)] text-[var(--color-text-muted)] cursor-not-allowed'
               : 'bg-[var(--color-brand)] hover:bg-[var(--color-brand-dark)] text-white',

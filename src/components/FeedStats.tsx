@@ -41,6 +41,7 @@ export function FeedStats() {
   const [sortDir, setSortDir] = useState<SortDir>('asc');
   const [expandedTable, setExpandedTable] = useState<string | null>(null);
   const [columnCache, setColumnCache] = useState<Record<string, string[]>>({});
+  const [showBrowser, setShowBrowser] = useState(false);
 
   useEffect(() => {
     if (!db) { setStats([]); setExpandedTable(null); setColumnCache({}); return; }
@@ -65,10 +66,7 @@ export function FeedStats() {
   }, [db]);
 
   async function handleRowClick(name: string) {
-    if (expandedTable === name) {
-      setExpandedTable(null);
-      return;
-    }
+    if (expandedTable === name) { setExpandedTable(null); return; }
     setExpandedTable(name);
     if (!columnCache[name] && db) {
       const result = await runQuery(db, `PRAGMA table_info("${name}")`);
@@ -105,114 +103,133 @@ export function FeedStats() {
     return copy;
   }, [stats, sortKey, sortDir]);
 
+  const totalRows = useMemo(() => stats.reduce((sum, s) => sum + s.rows, 0), [stats]);
+
   if (!db) return null;
 
   return (
-    <div className="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] overflow-hidden shadow-sm">
-      <div className="px-5 py-4 border-b border-[var(--color-border)] flex items-center justify-between">
-        <div>
-          <h2 className="text-sm font-semibold text-[var(--color-text-primary)]">Feed loaded</h2>
-          {feedName && (
-            <p className="text-xs text-[var(--color-text-muted)] mt-0.5 font-mono">{feedName}</p>
-          )}
+    <div className="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] shadow-sm overflow-hidden">
+
+      {/* Compact strip — always visible */}
+      <button
+        onClick={() => setShowBrowser((v) => !v)}
+        className="w-full px-5 py-3 flex items-center justify-between gap-4 hover:bg-[var(--color-subtle)] transition-colors text-left"
+      >
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-9 h-9 rounded-xl bg-[var(--color-brand-light)] flex items-center justify-center flex-shrink-0">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 text-[var(--color-brand-dark)]">
+              <ellipse cx="10" cy="5" rx="7" ry="2.5" />
+              <path d="M3 5v4c0 1.38 3.13 2.5 7 2.5s7-1.12 7-2.5V5" />
+              <path d="M3 9v4c0 1.38 3.13 2.5 7 2.5s7-1.12 7-2.5V9" />
+            </svg>
+          </div>
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-[var(--color-text-primary)] truncate">
+              {feedName ?? 'GTFS Feed'}
+            </p>
+            <p className="text-sm text-[var(--color-text-muted)]">
+              {loadingStats
+                ? 'counting rows…'
+                : `${stats.length} tables · ${totalRows.toLocaleString()} rows`}
+            </p>
+          </div>
         </div>
-        {loadingStats && (
-          <span className="text-xs text-[var(--color-text-muted)] animate-pulse">counting rows…</span>
-        )}
-      </div>
 
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b border-[var(--color-border)] bg-[var(--color-subtle)]">
-            <th className="px-5 py-2.5 text-left">
-              <div className="flex items-center gap-3">
-                <SortButton label="Table" sortKey="name" active={sortKey === 'name'} dir={sortDir} onClick={handleSortClick} />
-                {sortKey !== 'default' && (
-                  <button
-                    onClick={() => { setSortKey('default'); setSortDir('asc'); }}
-                    className="text-[10px] text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] transition-colors"
-                  >
-                    reset
-                  </button>
-                )}
-              </div>
-            </th>
-            <th className="px-5 py-2.5 text-right">
-              <SortButton label="Rows" sortKey="rows" active={sortKey === 'rows'} dir={sortDir} onClick={handleSortClick} />
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {sorted.map(({ name, rows }, i) => {
-            const isExpanded = expandedTable === name;
-            const cols = columnCache[name];
-            return (
-              <>
-                <tr
-                  key={name}
-                  onClick={() => handleRowClick(name)}
-                  className={[
-                    'border-b border-[var(--color-border)] cursor-pointer transition-colors',
-                    isExpanded
-                      ? 'bg-[var(--color-brand-light)]'
-                      : i % 2 !== 0
-                        ? 'bg-[var(--color-subtle)] hover:bg-[var(--color-brand-light)]'
-                        : 'hover:bg-[var(--color-brand-light)]',
-                    name === 'stop_times' ? 'font-semibold' : '',
-                  ].join(' ')}
-                >
-                  <td className="px-5 py-2.5 font-mono text-sm">
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={[
-                          'text-[10px] transition-transform duration-150',
-                          isExpanded ? 'rotate-90' : '',
-                          'text-[var(--color-text-muted)]',
-                        ].join(' ')}
+        <div className="flex items-center gap-2 shrink-0">
+          <span className="text-sm text-[var(--color-text-muted)]">
+            {showBrowser ? 'Hide tables' : 'Browse tables'}
+          </span>
+          <svg
+            className={['w-5 h-5 text-[var(--color-brand)] transition-transform duration-150', showBrowser ? 'rotate-180' : ''].join(' ')}
+            viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+          >
+            <polyline points="4 6 8 10 12 6" />
+          </svg>
+        </div>
+      </button>
+
+      {/* Full table browser — revealed on demand */}
+      {showBrowser && (
+        <div className="border-t border-[var(--color-border)]">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-[var(--color-border)] bg-[var(--color-subtle)]">
+                <th className="px-5 py-2.5 text-left">
+                  <div className="flex items-center gap-3">
+                    <SortButton label="Table" sortKey="name" active={sortKey === 'name'} dir={sortDir} onClick={handleSortClick} />
+                    {sortKey !== 'default' && (
+                      <button
+                        onClick={() => { setSortKey('default'); setSortDir('asc'); }}
+                        className="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] transition-colors"
                       >
-                        ▶
-                      </span>
-                      <span className={
-                        name === 'stop_times'
-                          ? 'text-[var(--color-brand-dark)]'
-                          : 'text-[var(--color-text-primary)]'
-                      }>
-                        {name}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-5 py-2.5 text-right tabular-nums text-[var(--color-text-secondary)]">
-                    {rows.toLocaleString()}
-                  </td>
-                </tr>
-
-                {isExpanded && (
-                  <tr key={`${name}-cols`} className="border-b border-[var(--color-border)] bg-[var(--color-brand-light)]">
-                    <td colSpan={2} className="px-5 py-3">
-                      {!cols ? (
-                        <span className="text-xs text-[var(--color-text-muted)] animate-pulse">
-                          loading columns…
-                        </span>
-                      ) : (
-                        <div className="flex flex-wrap gap-1.5">
-                          {cols.map((col) => (
-                            <span
-                              key={col}
-                              className="text-[11px] font-mono px-2 py-0.5 rounded-md bg-[var(--color-surface)] border border-[var(--color-border-strong)] text-[var(--color-text-secondary)]"
-                            >
-                              {col}
-                            </span>
-                          ))}
+                        reset
+                      </button>
+                    )}
+                  </div>
+                </th>
+                <th className="px-5 py-2.5 text-right">
+                  <SortButton label="Rows" sortKey="rows" active={sortKey === 'rows'} dir={sortDir} onClick={handleSortClick} />
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {sorted.map(({ name, rows }, i) => {
+                const isExpanded = expandedTable === name;
+                const cols = columnCache[name];
+                return (
+                  <>
+                    <tr
+                      key={name}
+                      onClick={() => handleRowClick(name)}
+                      className={[
+                        'border-b border-[var(--color-border)] cursor-pointer transition-colors',
+                        isExpanded
+                          ? 'bg-[var(--color-brand-light)]'
+                          : i % 2 !== 0
+                            ? 'bg-[var(--color-subtle)] hover:bg-[var(--color-brand-light)]'
+                            : 'hover:bg-[var(--color-brand-light)]',
+                        name === 'stop_times' ? 'font-semibold' : '',
+                      ].join(' ')}
+                    >
+                      <td className="px-5 py-2.5 font-mono text-sm">
+                        <div className="flex items-center gap-2">
+                          <span className={['text-[10px] transition-transform duration-150', isExpanded ? 'rotate-90' : '', 'text-[var(--color-text-muted)]'].join(' ')}>
+                            ▶
+                          </span>
+                          <span className={name === 'stop_times' ? 'text-[var(--color-brand-dark)]' : 'text-[var(--color-text-primary)]'}>
+                            {name}
+                          </span>
                         </div>
-                      )}
-                    </td>
-                  </tr>
-                )}
-              </>
-            );
-          })}
-        </tbody>
-      </table>
+                      </td>
+                      <td className="px-5 py-2.5 text-right tabular-nums text-[var(--color-text-secondary)]">
+                        {rows.toLocaleString()}
+                      </td>
+                    </tr>
+
+                    {isExpanded && (
+                      <tr key={`${name}-cols`} className="border-b border-[var(--color-border)] bg-[var(--color-brand-light)]">
+                        <td colSpan={2} className="px-5 py-3">
+                          {!cols ? (
+                            <span className="text-xs text-[var(--color-text-muted)] animate-pulse">loading columns…</span>
+                          ) : (
+                            <div className="flex flex-wrap gap-1.5">
+                              {cols.map((col) => (
+                                <span key={col} className="text-xs font-mono px-2 py-0.5 rounded-md bg-[var(--color-surface)] border border-[var(--color-border-strong)] text-[var(--color-text-secondary)]">
+                                  {col}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    )}
+                  </>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }

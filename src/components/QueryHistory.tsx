@@ -73,7 +73,7 @@ export function QueryHistory() {
         <h2 className="text-sm font-semibold text-[var(--color-text-primary)]">Query History</h2>
         <button
           onClick={clearHistory}
-          className="text-[10px] text-[var(--color-text-muted)] hover:text-red-500 transition-colors"
+          className="text-sm text-[var(--color-text-muted)] hover:text-red-500 transition-colors"
         >
           clear
         </button>
@@ -99,15 +99,19 @@ export function QueryHistory() {
                     )}
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
-                    <span className="text-[10px] text-[var(--color-text-muted)]">
+                    <span className="text-sm text-[var(--color-text-muted)]">
                       {fmtAge(entry.timestamp)}
                     </span>
-                    <span className={[
-                      'text-[9px] text-[var(--color-text-muted)] transition-transform duration-150',
-                      isOpen ? 'rotate-90' : '',
-                    ].join(' ')}>
-                      ▶
-                    </span>
+                    <svg
+                      className={[
+                        'w-6 h-6 text-[var(--color-brand)] transition-transform duration-150 shrink-0',
+                        isOpen ? 'rotate-180' : '',
+                      ].join(' ')}
+                      viewBox="0 0 16 16" fill="none"
+                      stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                    >
+                      <polyline points="4 6 8 10 12 6" />
+                    </svg>
                   </div>
                 </div>
 

@@ -1,11 +1,20 @@
 @import "tailwindcss";
 
 @theme {
-  /* Transit-inspired green — adjust this one value to tune the whole app */
-  --color-brand:       #00C97B;
-  --color-brand-dark:  #009E62;
-  --color-brand-light: #E6FBF2;
-  --color-brand-muted: #B3F0D5;
+  /* Transit brand palette — green primary, amber secondary */
+  --color-brand:       #30B566;
+  --color-brand-dark:  #12452B;
+  --color-brand-light: #e6f4ec;
+  --color-brand-muted: #b8e8cc;
+
+  --color-amber:               #FFA900;
+
+  --color-transit-green:       #12452B;
+  --color-transit-green-mid:   #1a5c3a;
+  --color-transit-green-accent: #27a559;
+  --color-transit-green-bg:    #e6f4ec;
+  --color-transit-green-text:  #B8D4C4;
+  --color-transit-orange:      #FF4A00;
 
   /* Surface palette */
   --color-surface:     #FFFFFF;
@@ -15,13 +24,20 @@
 
   /* Text */
   --color-text-primary:   #0F1724;
-  --color-text-secondary: #5A6478;
-  --color-text-muted:     #8E97A8;
+  --color-text-secondary: #4A5568;
+  --color-text-muted:     #6B7280;
+
+  /* Font scale — bumped for readability (WCAG AA) */
+  --text-xs: 0.875rem;
+  --text-sm: 1rem;
 
   /* Code editor — keep dark for readability */
   --color-code-bg:    #1A2235;
   --color-code-text:  #E2E8F0;
   --color-code-border:#2D3F5A;
+
+  /* Display font */
+  --font-display: 'Puffin Transit Bold Italic', 'Puffin Transit Bold Italic Placeholder', sans-serif;
 }
 
 :root {
