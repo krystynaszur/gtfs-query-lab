@@ -1,6 +1,6 @@
 # GTFS Workbench
 
-Query, optimize, and validate GTFS transit feeds — all in your browser. Load any real GTFS `.zip`, write ad-hoc SQL with live execution plans, run guided optimization scenarios, and scan for feed health issues. No server required.
+Query, optimize, validate, and visualise GTFS transit feeds — all in your browser. Load any real GTFS `.zip`, write ad-hoc SQL with live execution plans, run guided optimization scenarios, scan for feed health issues, and plot stops on a live map filtered by route. No server required.
 
 Built as a portfolio piece to demonstrate practical knowledge of query performance on real-world datasets.
 
@@ -54,6 +54,14 @@ Runs automatically when a feed is loaded. Eight checks across four categories:
 
 Each check shows a pass/warning/error badge with a plain-English message. Tables absent from the feed are silently skipped.
 
+### Route Map
+
+Plot every stop from the feed on an interactive Leaflet map. Select a route from the dropdown to filter to only that route's stops — the map auto-fits to the result. The route filter runs a `SELECT DISTINCT` join across `stop_times → trips → stops`, which on a large feed demonstrates exactly why an index on `stop_times(trip_id)` matters: selecting a route triggers the Index Inspector inline so you can create the index and re-filter without leaving the tab.
+
+- Circle markers use the transit brand palette (green fill, dark green border)
+- Routes in the dropdown are sorted numerically then alphabetically, so route 14 appears before 139
+- Index Inspector appears below the map only when a route is selected
+
 ### Schema explorer
 
 The feed header strip shows the file name and total row count at a glance. Click **Browse tables** to expand the full sortable table browser; click any table row to inspect its column list — useful when writing queries in the free editor.
@@ -70,6 +78,7 @@ The feed header strip shows the file name and total row count at a glance. Click
 | sql.js 1.14 | SQLite compiled to WASM |
 | JSZip | Unzipping GTFS feeds in the browser |
 | Web Worker | Keeps sql.js off the main thread |
+| Leaflet + react-leaflet | Interactive stop map |
 
 ---
 
@@ -106,6 +115,7 @@ src/
     QueryHistory.tsx       # accordion log of every query run with timing and full SQL
     ScenarioPanel.tsx      # wraps QueryComparator with scenario description
     FeedValidator.tsx      # automated feed health checks (8 checks, 4 categories)
+    RouteMap.tsx           # Leaflet stop map with route dropdown filter + inline IndexInspector
   lib/
     gtfsLoader.ts          # unzips feed, parses CSVs, loads into sql.js via Web Worker
     queryRunner.ts         # timing wrapper + EXPLAIN QUERY PLAN parser (PlanNode tree)

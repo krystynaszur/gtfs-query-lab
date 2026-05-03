@@ -52,3 +52,9 @@ body {
   background-color: var(--color-subtle);
   color: var(--color-text-primary);
 }
+
+/* Prevent Tailwind preflight from breaking Leaflet tile images */
+.leaflet-container img {
+  max-width: none;
+  display: inline;
+}

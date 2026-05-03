@@ -5,14 +5,16 @@ import { FeedStats } from './components/FeedStats';
 import { FreeQueryEditor } from './components/FreeQueryEditor';
 import { ScenarioLab } from './components/ScenarioLab';
 import { FeedValidator } from './components/FeedValidator';
+import { RouteMap } from './components/RouteMap';
 
-type Tab = 'free' | 'scenarios' | 'validate';
+type Tab = 'free' | 'scenarios' | 'validate' | 'map';
 
 function TabNav({ active, onChange }: { active: Tab; onChange: (t: Tab) => void }) {
   const tabs: { id: Tab; label: string }[] = [
     { id: 'free', label: 'Free Query' },
     { id: 'scenarios', label: 'Scenario Lab' },
     { id: 'validate', label: 'Feed Validator' },
+    { id: 'map', label: 'Route Map' },
   ];
   return (
     <div className="flex gap-1 border-b border-[var(--color-border)]">
@@ -92,11 +94,11 @@ function AppShell() {
               >
                 What you can do with GTFS Workbench
               </p>
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
                 {([
                   {
                     iconColor: '#92620A', bg: '#FFF7E0',
-                    label: 'Free SQL editor',
+                    label: 'Free SQL Editor',
                     desc: 'Ad-hoc SQL against any table in the loaded feed, with live execution plans',
                     icon: (
                       <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
@@ -108,7 +110,7 @@ function AppShell() {
                   },
                   {
                     iconColor: '#CC3300', bg: '#FFF0EB',
-                    label: 'Execution plan viewer',
+                    label: 'Execution Plan Viewer',
                     desc: 'Compare slow and fast queries side-by-side with timing and plan analysis',
                     icon: (
                       <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
@@ -142,6 +144,17 @@ function AppShell() {
                       </svg>
                     ),
                   },
+                  {
+                    iconColor: '#6B3FA0', bg: '#F3EEFF',
+                    label: 'Route Map',
+                    desc: 'Plot stops on a live map and filter by route to spot-check coverage',
+                    icon: (
+                      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
+                        <path d="M10 2C7.24 2 5 4.24 5 7c0 4 5 11 5 11s5-7 5-11c0-2.76-2.24-5-5-5z" />
+                        <circle cx="10" cy="7" r="1.5" fill="currentColor" stroke="none" />
+                      </svg>
+                    ),
+                  },
                 ] as const).map(({ iconColor, bg, label, desc, icon }) => (
                   <div key={label} className="flex flex-col gap-3 bg-white rounded-lg px-4 py-4 border border-[#FFE8A0]">
                     <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: bg, color: iconColor }}>
@@ -162,7 +175,7 @@ function AppShell() {
             <FeedStats />
             <div className="flex flex-col gap-4">
               <TabNav active={tab} onChange={setTab} />
-              {tab === 'free' ? <FreeQueryEditor /> : tab === 'scenarios' ? <ScenarioLab /> : <FeedValidator />}
+              {tab === 'free' ? <FreeQueryEditor /> : tab === 'scenarios' ? <ScenarioLab /> : tab === 'validate' ? <FeedValidator /> : <RouteMap />}
             </div>
           </div>
         )}
