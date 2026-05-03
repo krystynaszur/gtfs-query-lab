@@ -100,7 +100,7 @@ export function QueryComparator({ slow, fast, before, setup, insight }: QueryCom
     setLoading(false);
   }
 
-  const bothRan = results.slow && results.fast;
+  const bothRan = results.slow && results.fast && !results.slow.error && !results.fast.error;
 
   return (
     <div className="flex flex-col gap-5">

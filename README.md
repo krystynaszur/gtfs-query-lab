@@ -1,6 +1,6 @@
-# GTFS Query Lab
+# GTFS Workbench
 
-An interactive SQL optimization workbench that runs entirely in the browser — no server required. Load any real GTFS transit feed and explore how query choices, indexes, and join order affect execution time on production-scale data.
+Query, optimize, and validate GTFS transit feeds — all in your browser. Load any real GTFS `.zip`, write ad-hoc SQL with live execution plans, run guided optimization scenarios, and scan for feed health issues. No server required.
 
 Built as a portfolio piece to demonstrate practical knowledge of query performance on real-world datasets.
 
@@ -36,6 +36,23 @@ Four curated slow vs. fast query pairs, each with a side-by-side execution plan,
 | 4 | Check which trips run today | Materialise active services once vs per-row subqueries |
 
 User-created indexes are automatically dropped before each scenario run to keep the comparisons clean.
+
+### Feed Validator
+
+Runs automatically when a feed is loaded. Eight checks across four categories:
+
+| Category | Check | Severity |
+|----------|-------|----------|
+| Services | Expired service periods | error |
+| Services | Services expiring within 30 days | warning |
+| Routes & Trips | Routes without trips | warning |
+| Routes & Trips | Trips without stop times | error |
+| Stops | Stops missing coordinates | error |
+| Referential Integrity | Stop times → unknown stops | error |
+| Referential Integrity | Stop times → unknown trips | error |
+| Referential Integrity | Trips → unknown routes | error |
+
+Each check shows a pass/warning/error badge with a plain-English message. Tables absent from the feed are silently skipped.
 
 ### Schema explorer
 
@@ -88,6 +105,7 @@ src/
     IndexInspector.tsx     # live index list with create (table+column form) and drop actions
     QueryHistory.tsx       # accordion log of every query run with timing and full SQL
     ScenarioPanel.tsx      # wraps QueryComparator with scenario description
+    FeedValidator.tsx      # automated feed health checks (8 checks, 4 categories)
   lib/
     gtfsLoader.ts          # unzips feed, parses CSVs, loads into sql.js via Web Worker
     queryRunner.ts         # timing wrapper + EXPLAIN QUERY PLAN parser (PlanNode tree)

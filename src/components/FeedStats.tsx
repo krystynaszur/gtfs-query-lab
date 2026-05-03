@@ -193,9 +193,12 @@ export function FeedStats() {
                     >
                       <td className="px-5 py-2.5 font-mono text-sm">
                         <div className="flex items-center gap-2">
-                          <span className={['text-[10px] transition-transform duration-150', isExpanded ? 'rotate-90' : '', 'text-[var(--color-text-muted)]'].join(' ')}>
-                            ▶
-                          </span>
+                          <svg
+                            className={['w-4 h-4 text-[var(--color-brand)] transition-transform duration-150 shrink-0', isExpanded ? 'rotate-180' : ''].join(' ')}
+                            viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                          >
+                            <polyline points="4 6 8 10 12 6" />
+                          </svg>
                           <span className={name === 'stop_times' ? 'text-[var(--color-brand-dark)]' : 'text-[var(--color-text-primary)]'}>
                             {name}
                           </span>

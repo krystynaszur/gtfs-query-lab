@@ -61,9 +61,9 @@ export function QueryEditor({
       {!readOnly && (
         <div className="flex items-center justify-between">
           <span className="text-xs text-[var(--color-text-muted)]">
-            <kbd className="px-1.5 py-0.5 bg-[var(--color-subtle)] border border-[var(--color-border)] rounded text-[10px]">Ctrl</kbd>
+            <kbd className="px-1.5 py-0.5 bg-[var(--color-subtle)] border border-[var(--color-border)] rounded text-xs">Ctrl</kbd>
             {' + '}
-            <kbd className="px-1.5 py-0.5 bg-[var(--color-subtle)] border border-[var(--color-border)] rounded text-[10px]">Enter</kbd>
+            <kbd className="px-1.5 py-0.5 bg-[var(--color-subtle)] border border-[var(--color-border)] rounded text-xs">Enter</kbd>
             {' to run'}
           </span>
           <button

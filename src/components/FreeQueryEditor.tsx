@@ -189,13 +189,15 @@ export function FreeQueryEditor() {
 
       {/* Plan + results (SELECT queries) */}
       {(result || loading) && !isLastDdl && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="flex flex-col gap-2">
-            <span className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
-              Execution plan
-            </span>
-            <ExecutionPlanPanel result={result} loading={loading} tableSizes={tableSizes} />
-          </div>
+        <div className={result?.error ? 'flex flex-col gap-2' : 'grid grid-cols-1 lg:grid-cols-2 gap-6'}>
+          {!result?.error && (
+            <div className="flex flex-col gap-2">
+              <span className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
+                Execution plan
+              </span>
+              <ExecutionPlanPanel result={result} loading={loading} tableSizes={tableSizes} />
+            </div>
+          )}
           <div className="flex flex-col gap-2">
             <span className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
               Results

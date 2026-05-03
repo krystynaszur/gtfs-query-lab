@@ -25,7 +25,7 @@ function TimingBadge({ ms }: { ms: number }) {
     ms < 100 ? 'bg-amber-50 text-amber-700' :
     'bg-red-50 text-red-600';
   return (
-    <span className={`font-mono text-[10px] font-semibold px-1.5 py-0.5 rounded-full shrink-0 ${cls}`}>
+    <span className={`font-mono text-xs font-semibold px-1.5 py-0.5 rounded-full shrink-0 ${cls}`}>
       {ms < 1 ? '<1' : ms.toFixed(1)}ms
     </span>
   );
@@ -34,7 +34,7 @@ function TimingBadge({ ms }: { ms: number }) {
 function SqlBlock({ sql }: { sql: string }) {
   return (
     <pre
-      className="text-[11px] font-mono whitespace-pre-wrap break-all leading-relaxed"
+      className="text-xs font-mono whitespace-pre-wrap break-all leading-relaxed"
       style={{ color: 'var(--color-code-text)' }}
     >
       {sql.trim().split('\n').map((line, i) => (
@@ -52,6 +52,7 @@ function SqlBlock({ sql }: { sql: string }) {
 export function QueryHistory() {
   const entries = useSyncExternalStore(subscribeHistory, getHistory);
   const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [copiedId, setCopiedId] = useState<number | null>(null);
   const [, tick] = useState(0);
 
   useEffect(() => {
@@ -59,9 +60,15 @@ export function QueryHistory() {
     return () => clearInterval(t);
   }, []);
 
+  function copyToClipboard(id: number, sql: string) {
+    navigator.clipboard.writeText(sql);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 1500);
+  }
+
   if (entries.length === 0) {
     return (
-      <p className="text-xs text-[var(--color-text-muted)] py-4">
+      <p className="text-sm text-[var(--color-text-muted)] py-4">
         No queries run yet. Results will appear here after each run.
       </p>
     );
@@ -84,7 +91,6 @@ export function QueryHistory() {
           const isOpen = expandedId === entry.id;
           return (
             <li key={entry.id} className="flex flex-col">
-              {/* Summary row — always visible, click to toggle */}
               <button
                 onClick={() => setExpandedId(isOpen ? null : entry.id)}
                 className="w-full text-left px-4 py-2.5 flex flex-col gap-1 hover:bg-[var(--color-subtle)] transition-colors"
@@ -93,7 +99,7 @@ export function QueryHistory() {
                   <div className="flex items-center gap-1.5 min-w-0">
                     <TimingBadge ms={entry.durationMs} />
                     {entry.label && (
-                      <span className="text-[10px] text-[var(--color-text-muted)] truncate">
+                      <span className="text-xs text-[var(--color-text-muted)] truncate">
                         {entry.label}
                       </span>
                     )}
@@ -115,20 +121,42 @@ export function QueryHistory() {
                   </div>
                 </div>
 
-                <span className="text-[11px] font-mono text-[var(--color-text-secondary)] truncate">
+                <span className="text-xs font-mono text-[var(--color-text-secondary)] truncate">
                   {sqlPreview(entry.sql)}
                 </span>
 
-                <span className="text-[10px] text-[var(--color-text-muted)]">
+                <span className="text-xs text-[var(--color-text-muted)]">
                   {entry.isError
                     ? <span className="text-red-500">error</span>
                     : `${entry.rowCount.toLocaleString()} row${entry.rowCount !== 1 ? 's' : ''}`}
                 </span>
               </button>
 
-              {/* Expanded SQL */}
               {isOpen && (
-                <div className="px-4 pb-3 pt-1 bg-[var(--color-code-bg)] border-t border-[var(--color-border)]">
+                <div className="px-4 pb-3 pt-2 bg-[var(--color-code-bg)] border-t border-[var(--color-border)]">
+                  <div className="flex justify-end mb-2">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); copyToClipboard(entry.id, entry.sql); }}
+                      className="flex items-center gap-1.5 text-xs text-[var(--color-text-muted)] hover:text-[#B8D4C4] transition-colors"
+                    >
+                      {copiedId === entry.id ? (
+                        <>
+                          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5">
+                            <polyline points="3 8 6 11 13 4" />
+                          </svg>
+                          Copied
+                        </>
+                      ) : (
+                        <>
+                          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5">
+                            <rect x="5" y="5" width="9" height="9" rx="1" />
+                            <path d="M11 5V3a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h2" />
+                          </svg>
+                          Copy
+                        </>
+                      )}
+                    </button>
+                  </div>
                   <SqlBlock sql={entry.sql} />
                 </div>
               )}

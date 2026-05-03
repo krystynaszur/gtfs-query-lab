@@ -100,7 +100,7 @@ export function IndexInspector() {
       {showCreate && (
         <div className="px-4 py-3 border-b border-[var(--color-border)] bg-[var(--color-subtle)] flex flex-col gap-2.5">
           <div className="flex flex-col gap-1">
-            <label className="text-[10px] font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
+            <label className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
               Table
             </label>
             <select
@@ -114,7 +114,7 @@ export function IndexInspector() {
           </div>
 
           <div className="flex flex-col gap-1">
-            <label className="text-[10px] font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
+            <label className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
               Column
             </label>
             <select
@@ -130,7 +130,7 @@ export function IndexInspector() {
           </div>
 
           {newTable && newColumn && (
-            <p className="text-[10px] font-mono text-[var(--color-text-muted)] truncate">
+            <p className="text-xs font-mono text-[var(--color-text-muted)] truncate">
               idx_{newTable}_{newColumn}
             </p>
           )}
@@ -163,7 +163,7 @@ export function IndexInspector() {
                 <p className="text-xs font-mono font-semibold text-[var(--color-brand-dark)] truncate">
                   {idx.name}
                 </p>
-                <p className="text-[11px] text-[var(--color-text-muted)] mt-0.5">
+                <p className="text-xs text-[var(--color-text-muted)] mt-0.5">
                   {idx.table}
                   <span className="text-[var(--color-text-secondary)]"> ({idx.columns})</span>
                 </p>
