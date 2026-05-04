@@ -84,7 +84,7 @@ function AppShell() {
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-6 py-8">
+      <main className="max-w-5xl mx-auto px-6 py-8 pb-20">
         {!db ? (
           <>
             <div className="mb-6 rounded-xl bg-[#FFFBF0] border border-[#FFE299] px-6 py-5">
@@ -181,11 +181,11 @@ function AppShell() {
         )}
       </main>
 
-      <footer className="mt-12 border-t border-[var(--color-border)]">
-        <div className="max-w-5xl mx-auto px-6 py-5 flex items-center justify-center gap-3">
+      <footer className="fixed bottom-0 left-0 right-0 z-10 bg-white border-t border-[var(--color-border)]">
+        <div className="max-w-5xl mx-auto px-6 py-3 flex items-center justify-center gap-3">
           <span className="text-sm text-[var(--color-text-muted)]">Created by Krystyna Szurmanska</span>
           <a
-            href="https://github.com/krystynaszur/gtfs-query-lab"
+            href="https://github.com/krystynaszur/gtfs-workbench"
             target="_blank"
             rel="noopener noreferrer"
             aria-label="View source on GitHub"

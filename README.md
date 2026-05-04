@@ -4,7 +4,9 @@ Query, optimize, validate, and visualise GTFS transit feeds — all in your brow
 
 Built as a portfolio piece to demonstrate practical knowledge of query performance on real-world datasets.
 
-**Live demo:** _coming soon (Vercel)_
+**Live demo:** [gtfs-workbench-krystynaszurs-projects.vercel.app](https://gtfs-workbench-93cbcrfmm-krystynaszurs-projects.vercel.app/)
+
+![GTFS Workbench — Route Map tab](docs/screenshot.gif)
 
 ---
 
@@ -56,11 +58,11 @@ Each check shows a pass/warning/error badge with a plain-English message. Tables
 
 ### Route Map
 
-Plot every stop from the feed on an interactive Leaflet map. Select a route from the dropdown to filter to only that route's stops — the map auto-fits to the result. The route filter runs a `SELECT DISTINCT` join across `stop_times → trips → stops`, which on a large feed demonstrates exactly why an index on `stop_times(trip_id)` matters: selecting a route triggers the Index Inspector inline so you can create the index and re-filter without leaving the tab.
+Plot every stop from the feed on an interactive Leaflet map. Select a route from the dropdown to filter to only that route's stops — the map auto-fits to the result.
 
-- Circle markers use the transit brand palette (green fill, dark green border)
-- Routes in the dropdown are sorted numerically then alphabetically, so route 14 appears before 139
-- Index Inspector appears below the map only when a route is selected
+- Routes in the dropdown are sorted numerically then alphabetically (route 14 before 139)
+- The route filter runs a `SELECT DISTINCT` join across `stop_times → trips → stops`, demonstrating exactly why an index on `stop_times(trip_id)` matters on large feeds
+- Selecting a route reveals the Index Inspector inline — create the index and re-filter without leaving the tab
 
 ### Schema explorer
 
@@ -85,8 +87,8 @@ The feed header strip shows the file name and total row count at a glance. Click
 ## Running locally
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/gtfs-query-lab.git
-cd gtfs-query-lab
+git clone https://github.com/krystynaszur/gtfs-workbench.git
+cd gtfs-workbench
 npm install
 npm run dev
 ```
@@ -95,7 +97,7 @@ Then open [http://localhost:5173](http://localhost:5173) and upload any GTFS `.z
 
 **Sample feeds to try:**
 - [STM Montreal](https://www.stm.info/en/about/developers) — large feed, good for seeing timing differences
-- [GTFS Schedule Sample Feed](https://github.com/google/transit/tree/master/gtfs/spec/en) — small, good for quick testing
+- [GTFS Schedule Sample Feed](https://gtfs.org/getting-started/example-feed/) — small, good for quick testing
 
 ---
 
