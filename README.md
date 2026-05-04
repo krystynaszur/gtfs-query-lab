@@ -63,6 +63,7 @@ Plot every stop from the feed on an interactive Leaflet map. Select a route from
 - Routes in the dropdown are sorted numerically then alphabetically (route 14 before 139)
 - The route filter runs a `SELECT DISTINCT` join across `stop_times → trips → stops`, demonstrating exactly why an index on `stop_times(trip_id)` matters on large feeds
 - Selecting a route reveals the Index Inspector inline — create the index and re-filter without leaving the tab
+- Circle markers use the transit brand palette; stop name appears on hover
 
 ### Schema explorer
 
@@ -157,20 +158,26 @@ npm run preview   # preview the production build locally
 
 Deployed on Vercel — push to `main` triggers a new deploy.
 
-### Sample feed (optional)
+### Sample feed
 
-To enable the one-click "Load sample feed" button, add to `.env.local`:
+A small sample feed is bundled at `public/sample-feed.zip` and served as a static asset. To enable the one-click **Load sample feed** button, add to `.env.local`:
 
 ```
-VITE_SAMPLE_FEED_URL=https://your-cdn.com/gtfs-sample.zip
-VITE_SAMPLE_FEED_NAME=STM Montreal
+VITE_SAMPLE_FEED_URL=/sample-feed.zip
+VITE_SAMPLE_FEED_NAME=Sample Feed
 ```
+
+For the Vercel deployment, set the same two variables under Project → Settings → Environment Variables and redeploy.
 
 ---
 
 ## Key findings at scale
 
+Measured against the STM Montreal feed (~14 M `stop_times` rows) in WASM SQLite:
+
 - `stop_times` is always the largest table (often 10–100× bigger than `trips`)
 - Without an index, `WHERE trip_id = ?` on 14 M rows takes ~800 ms in WASM SQLite; with `idx_st_trip` it drops to ~2 ms
 - Calendar resolution requires checking both `calendar` (weekly pattern) and `calendar_dates` (exceptions) — a correlated subquery against both re-scans thousands of rows per trip
 - A ±0.05° bounding box (`WHERE stop_lat BETWEEN ? AND ?`) before distance math cuts the candidate set from 10 K stops to ~50 before any floating-point computation runs
+- Real feeds are rarely clean — the STM Montreal feed has 79 expired service periods, 9 expiring within 30 days, and 1 stop missing coordinates, all surfaced instantly by the Feed Validator; referential integrity was intact
+- Filtering the Route Map by route joins `stop_times → trips → stops` across millions of rows; adding an index on `stop_times(trip_id)` turns a multi-second scan into a near-instant lookup — visible live in the app
