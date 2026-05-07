@@ -113,7 +113,9 @@ The feed header strip shows the file name and total row count at a glance. Click
 
 ## Running locally
 
-### Frontend
+**Prerequisites:** Node.js 18 or later, npm.
+
+### 1. Clone and start the frontend
 
 ```bash
 git clone https://github.com/krystynaszur/gtfs-workbench.git
@@ -122,9 +124,11 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:5173](http://localhost:5173) and upload any GTFS `.zip` file. The drag-and-drop loader works without the backend running.
+Open [http://localhost:5173](http://localhost:5173). The drag-and-drop feed loader works immediately — no backend required. Upload any GTFS `.zip` to start querying.
 
-### Backend (optional — enables the public feed dropdown)
+### 2. Start the backend (optional)
+
+The backend enables the **public feed dropdown** on the home screen. Open a second terminal from the repo root:
 
 ```bash
 cd backend
@@ -132,7 +136,16 @@ npm install
 npm run start:dev
 ```
 
-The API listens on `http://localhost:3001`. Vite proxies `/api/*` to it automatically in dev, so no extra configuration is needed.
+The API listens on `http://localhost:3001`. Vite automatically proxies `/api/*` to it in development — no extra configuration needed. Once running, the dropdown appears below the drag-and-drop zone.
+
+### 3. Enable the sample feed button (optional)
+
+Create `.env.local` in the repo root to activate the **Load sample feed** shortcut:
+
+```
+VITE_SAMPLE_FEED_URL=/sample-feed.zip
+VITE_SAMPLE_FEED_NAME=Sample Feed
+```
 
 **Sample feeds to try (manual upload):**
 - [STM Montreal](https://www.stm.info/en/about/developers) — large feed, good for seeing timing differences
@@ -222,10 +235,14 @@ Set these environment variables in Vercel → Project → Settings → Environme
 
 1. New project → Deploy from GitHub → select this repo
 2. Set **Root Directory** to `backend`
-3. Add environment variable: `CORS_ORIGIN` = your Vercel frontend URL (e.g. `https://gtfs-workbench.vercel.app`)
+3. Add environment variable: `CORS_VERCEL_SLUG` = your Vercel team slug (see below)
 4. Railway injects `PORT` automatically — `main.ts` reads it with `process.env.PORT ?? 3001`
 
 Railway auto-detects Node.js, runs `npm install` + `npm run build` + `npm run start`, and assigns a public URL.
+
+**Finding your Vercel team slug:** open any preview deployment URL — it looks like `https://gtfs-workbench-abc123-`**`krystynaszurs-projects`**`.vercel.app`. The bold part is your slug. Set `CORS_VERCEL_SLUG` to that value.
+
+When `CORS_VERCEL_SLUG` is set, the backend only accepts requests from URLs containing that slug (your production and preview deployments). Without it, any `.vercel.app` domain is allowed — safe for local development or forks.
 
 ### Sample feed
 

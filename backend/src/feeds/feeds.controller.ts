@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Res, HttpCode } from '@nestjs/common';
 import { Readable } from 'stream';
 import type { Response } from 'express';
 import { FeedsService, type FeedMeta } from './feeds.service';
+import { FetchFeedDto } from './dto/fetch-feed.dto';
 
 @Controller('feeds')
 export class FeedsController {
@@ -15,7 +16,7 @@ export class FeedsController {
   @Post('fetch')
   @HttpCode(200)
   async fetchFeed(
-    @Body() body: { id: string },
+    @Body() body: FetchFeedDto,
     @Res() res: Response,
   ): Promise<void> {
     const { body: webStream, contentLength } = await this.feedsService.fetchFeedStream(body.id);
