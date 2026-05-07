@@ -1,6 +1,7 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { DBProvider, useDB } from './contexts/DBContext';
 import { FeedLoader } from './components/FeedLoader';
+import { FeedPicker } from './components/FeedPicker';
 import { FeedStats } from './components/FeedStats';
 import { FreeQueryEditor } from './components/FreeQueryEditor';
 import { ScenarioLab } from './components/ScenarioLab';
@@ -39,7 +40,12 @@ function TabNav({ active, onChange }: { active: Tab; onChange: (t: Tab) => void 
 function AppShell() {
   const { db, loadFeed } = useDB();
   const [tab, setTab] = useState<Tab>('free');
+  const [showSwitcher, setShowSwitcher] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (db) setShowSwitcher(false);
+  }, [db]);
 
   return (
     <div className="min-h-screen" style={{ background: 'linear-gradient(0deg, rgb(255, 250, 248) 95%, rgb(249, 237, 237) 96.0808%)' }}>
@@ -74,15 +80,33 @@ function AppShell() {
                 }}
               />
               <button
-                onClick={() => fileInputRef.current?.click()}
+                onClick={() => setShowSwitcher((s) => !s)}
                 className="text-sm text-[#B8D4C4] hover:text-white transition-colors font-medium"
               >
-                Load different feed
+                {showSwitcher ? 'Cancel' : 'Load different feed'}
               </button>
             </>
           )}
         </div>
       </header>
+
+      {db && showSwitcher && (
+        <div className="bg-white border-b border-[var(--color-border)] shadow-sm">
+          <div className="max-w-5xl mx-auto px-6 py-3 flex items-center gap-3 flex-wrap">
+            <span className="text-sm text-[var(--color-text-muted)] whitespace-nowrap">
+              Upload a file:
+            </span>
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="px-3 py-1.5 rounded-lg border border-[var(--color-border-strong)] text-sm font-medium text-[var(--color-text-primary)] hover:bg-[var(--color-subtle)] transition-colors whitespace-nowrap"
+            >
+              Choose .zip
+            </button>
+            <span className="text-xs text-[var(--color-text-muted)]">or</span>
+            <FeedPicker compact />
+          </div>
+        </div>
+      )}
 
       <main className="max-w-5xl mx-auto px-6 py-8 pb-20">
         {!db ? (
@@ -169,6 +193,7 @@ function AppShell() {
               </div>
             </div>
             <FeedLoader />
+            <FeedPicker />
           </>
         ) : (
           <div className="flex flex-col gap-6">

@@ -1,6 +1,8 @@
 # GTFS Workbench
 
-Query, optimize, validate, and visualise GTFS transit feeds — all in your browser. Load any real GTFS `.zip`, write ad-hoc SQL with live execution plans, run guided optimization scenarios, scan for feed health issues, and plot stops on a live map filtered by route. No server required.
+Query, optimize, validate, and visualise GTFS transit feeds — all in your browser. Load any GTFS `.zip` from disk or fetch directly from a curated list of public agencies, write ad-hoc SQL with live execution plans, run guided optimization scenarios, scan for feed health issues, and plot stops on a live map filtered by route.
+
+All SQL querying runs entirely in the browser (WebAssembly SQLite via [sql.js](https://sql.js.org/)). A companion NestJS API handles the one thing the browser can't: fetching feeds from external URLs without hitting CORS restrictions.
 
 Built as a portfolio piece to demonstrate practical knowledge of query performance on real-world datasets.
 
@@ -15,6 +17,21 @@ Built as a portfolio piece to demonstrate practical knowledge of query performan
 GTFS (General Transit Feed Specification) is the open data format used by thousands of transit agencies worldwide. A single feed can contain millions of rows — Montreal's STM feed has ~14 million `stop_times` records alone.
 
 This app loads a GTFS `.zip` entirely in the browser using [sql.js](https://sql.js.org/) (SQLite compiled to WebAssembly) and demonstrates how query choices affect real execution time on that data.
+
+### Fetching public feeds
+
+A dropdown on the load screen lets you fetch a live GTFS feed without downloading anything manually. Picking an agency calls the NestJS backend, which fetches the zip server-side and streams the bytes back to the browser. The browser can't do this itself — most transit agencies don't set permissive CORS headers.
+
+The backend exposes two endpoints:
+
+| Endpoint | What it does |
+|---|---|
+| `GET /feeds` | Returns the list of available agencies (name, city, country) |
+| `POST /feeds/fetch` | Accepts a feed `id`, fetches the upstream zip, streams it back |
+
+Feed URLs are kept server-side — the client sends only an opaque `id` validated against a whitelist. This prevents the backend from being used as an open proxy (SSRF). The zip is streamed rather than buffered, so the browser starts receiving bytes before the backend has finished downloading.
+
+If the backend is unreachable, the dropdown is silently hidden and manual drag-and-drop upload continues to work.
 
 ### Free Query Editor
 
@@ -73,6 +90,8 @@ The feed header strip shows the file name and total row count at a glance. Click
 
 ## Tech stack
 
+### Frontend
+
 | Tool | Role |
 |------|------|
 | React 19 + TypeScript | UI |
@@ -83,9 +102,18 @@ The feed header strip shows the file name and total row count at a glance. Click
 | Web Worker | Keeps sql.js off the main thread |
 | Leaflet + react-leaflet | Interactive stop map |
 
+### Backend (`backend/`)
+
+| Tool | Role |
+|------|------|
+| NestJS 10 + TypeScript | API framework |
+| Node.js `fetch` + `Readable.fromWeb` | Streams upstream zips to the client |
+
 ---
 
 ## Running locally
+
+### Frontend
 
 ```bash
 git clone https://github.com/krystynaszur/gtfs-workbench.git
@@ -94,9 +122,19 @@ npm install
 npm run dev
 ```
 
-Then open [http://localhost:5173](http://localhost:5173) and upload any GTFS `.zip` file.
+Open [http://localhost:5173](http://localhost:5173) and upload any GTFS `.zip` file. The drag-and-drop loader works without the backend running.
 
-**Sample feeds to try:**
+### Backend (optional — enables the public feed dropdown)
+
+```bash
+cd backend
+npm install
+npm run start:dev
+```
+
+The API listens on `http://localhost:3001`. Vite proxies `/api/*` to it automatically in dev, so no extra configuration is needed.
+
+**Sample feeds to try (manual upload):**
 - [STM Montreal](https://www.stm.info/en/about/developers) — large feed, good for seeing timing differences
 - [GTFS Schedule Sample Feed](https://gtfs.org/getting-started/example-feed/) — small, good for quick testing
 
@@ -105,34 +143,44 @@ Then open [http://localhost:5173](http://localhost:5173) and upload any GTFS `.z
 ## Project structure
 
 ```
-src/
+src/                           # React frontend
   contexts/
-    DBContext.tsx          # db instance, loading state, progress, table row counts
+    DBContext.tsx              # db instance, loading state, progress, table row counts
   components/
-    FeedLoader.tsx         # drag-and-drop upload with progress bar
-    FeedStats.tsx          # compact strip (feed name + row count) with expandable sortable table browser
-    QueryComparator.tsx    # slow/fast runner — drops user indexes, shows speedup badge
-    ExecutionPlanPanel.tsx # EXPLAIN QUERY PLAN tree: badges, scan bars, timing, rows ratio
-    FreeQueryEditor.tsx    # query editor + plan + hints + Indexes/History sub-tabs
-    IndexInspector.tsx     # live index list with create (table+column form) and drop actions
-    QueryHistory.tsx       # accordion log of every query run with timing and full SQL
-    ScenarioPanel.tsx      # wraps QueryComparator with scenario description
-    FeedValidator.tsx      # automated feed health checks (8 checks, 4 categories)
-    RouteMap.tsx           # Leaflet stop map with route dropdown filter + inline IndexInspector
+    FeedLoader.tsx             # drag-and-drop upload with progress bar
+    FeedPicker.tsx             # dropdown that fetches a feed via the NestJS API
+    FeedStats.tsx              # compact strip (feed name + row count) with expandable table browser
+    QueryComparator.tsx        # slow/fast runner — drops user indexes, shows speedup badge
+    ExecutionPlanPanel.tsx     # EXPLAIN QUERY PLAN tree: badges, scan bars, timing, rows ratio
+    FreeQueryEditor.tsx        # query editor + plan + hints + Indexes/History sub-tabs
+    IndexInspector.tsx         # live index list with create (table+column form) and drop actions
+    QueryHistory.tsx           # accordion log of every query run with timing and full SQL
+    ScenarioPanel.tsx          # wraps QueryComparator with scenario description
+    FeedValidator.tsx          # automated feed health checks (8 checks, 4 categories)
+    RouteMap.tsx               # Leaflet stop map with route dropdown filter + inline IndexInspector
   lib/
-    gtfsLoader.ts          # unzips feed, parses CSVs, loads into sql.js via Web Worker
-    queryRunner.ts         # timing wrapper + EXPLAIN QUERY PLAN parser (PlanNode tree)
-    queryHistory.ts        # module-level pub/sub store for query history
-    scenarios.ts           # re-exports the four scenario definitions
-    types.ts               # Scenario interface
+    gtfsLoader.ts              # unzips feed, parses CSVs, loads into sql.js via Web Worker
+    queryRunner.ts             # timing wrapper + EXPLAIN QUERY PLAN parser (PlanNode tree)
+    queryHistory.ts            # module-level pub/sub store for query history
+    scenarios.ts               # re-exports the four scenario definitions
+    types.ts                   # Scenario interface
   scenarios/
-    stopTimesIndex.ts      # scenario 1: index on stop_times
-    joinOrder.ts           # scenario 2: aggregate before joining
-    spatialBoundingBox.ts  # scenario 3: bounding-box spatial filter
-    calendarService.ts     # scenario 4: materialise active services
+    stopTimesIndex.ts          # scenario 1: index on stop_times
+    joinOrder.ts               # scenario 2: aggregate before joining
+    spatialBoundingBox.ts      # scenario 3: bounding-box spatial filter
+    calendarService.ts         # scenario 4: materialise active services
   workers/
-    db.worker.ts           # Web Worker: owns all sql.js state, handles load + query messages
+    db.worker.ts               # Web Worker: owns all sql.js state, handles load + query messages
   App.tsx
+
+backend/                       # NestJS API
+  src/
+    feeds/
+      feeds.controller.ts      # GET /feeds, POST /feeds/fetch
+      feeds.service.ts         # whitelisted feed registry, 30 s timeout, streaming fetch
+      feeds.module.ts
+    app.module.ts
+    main.ts                    # CORS + PORT from env vars
 ```
 
 ### Data pipeline
@@ -151,6 +199,8 @@ The parser recognises SQLite 3.39+ output formats including `CO-ROUTINE` (lazy C
 
 ## Build and deploy
 
+### Frontend (Vercel)
+
 ```bash
 npm run build     # outputs to dist/
 npm run preview   # preview the production build locally
@@ -158,16 +208,33 @@ npm run preview   # preview the production build locally
 
 Deployed on Vercel — push to `main` triggers a new deploy.
 
+Set these environment variables in Vercel → Project → Settings → Environment Variables:
+
+| Variable | Value |
+|---|---|
+| `VITE_SAMPLE_FEED_URL` | `/sample-feed.zip` |
+| `VITE_SAMPLE_FEED_NAME` | `Sample Feed` |
+| `VITE_API_URL` | Your Railway backend URL (e.g. `https://gtfs-api-production.railway.app`) |
+
+`VITE_API_URL` enables the public feed dropdown in production. Without it the dropdown is hidden and manual upload still works.
+
+### Backend (Railway)
+
+1. New project → Deploy from GitHub → select this repo
+2. Set **Root Directory** to `backend`
+3. Add environment variable: `CORS_ORIGIN` = your Vercel frontend URL (e.g. `https://gtfs-workbench.vercel.app`)
+4. Railway injects `PORT` automatically — `main.ts` reads it with `process.env.PORT ?? 3001`
+
+Railway auto-detects Node.js, runs `npm install` + `npm run build` + `npm run start`, and assigns a public URL.
+
 ### Sample feed
 
-A small sample feed is bundled at `public/sample-feed.zip` and served as a static asset. To enable the one-click **Load sample feed** button, add to `.env.local`:
+A small sample feed is bundled at `public/sample-feed.zip` and served as a static asset. To enable the one-click **Load sample feed** button locally, add to `.env.local`:
 
 ```
 VITE_SAMPLE_FEED_URL=/sample-feed.zip
 VITE_SAMPLE_FEED_NAME=Sample Feed
 ```
-
-For the Vercel deployment, set the same two variables under Project → Settings → Environment Variables and redeploy.
 
 ---
 
