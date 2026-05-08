@@ -202,19 +202,19 @@ export function RouteMap() {
           <svg className="mt-0.5 shrink-0 w-4 h-4 text-amber-500" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
           </svg>
-          <div className="flex-1 min-w-0">
-            <p className="text-amber-800">
+          <div className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center gap-2">
+            <p className="flex-1 text-amber-800">
               This join scans <span className="font-mono text-xs">stop_times</span> on{' '}
               <span className="font-mono text-xs">trip_id</span> without an index — slow on large feeds.
             </p>
+            <button
+              onClick={handleCreateTripIndex}
+              disabled={creatingIndex}
+              className="w-full sm:w-auto shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-500 text-white hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {creatingIndex ? 'Creating…' : 'Create idx_st_trip'}
+            </button>
           </div>
-          <button
-            onClick={handleCreateTripIndex}
-            disabled={creatingIndex}
-            className="shrink-0 px-3 py-1 rounded-lg text-xs font-semibold bg-amber-500 text-white hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            {creatingIndex ? 'Creating…' : 'Create idx_st_trip'}
-          </button>
         </div>
       )}
 
