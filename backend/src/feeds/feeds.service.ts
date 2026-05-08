@@ -12,11 +12,11 @@ type FeedEntry = FeedMeta & { url: string };
 // URLs stay server-side — the client only sends an id, preventing open-redirect / SSRF.
 const FEEDS: FeedEntry[] = [
   {
-    id: 'exo',
-    name: 'EXO',
-    city: 'Montreal',
+    id: 'roam-transit',
+    name: 'Roam Transit',
+    city: 'Banff',
     country: 'Canada',
-    url: 'https://exo.quebec/xdata/trains/google_transit.zip',
+    url: 'https://data.trilliumtransit.com/gtfs/roamtransit-banff-ab-ca/roamtransit-banff-ab-ca.zip',
   },
   {
     id: 'maritime-bus',
@@ -33,6 +33,13 @@ const FEEDS: FeedEntry[] = [
     url: 'https://www.hinton.ca/DocumentCenter/View/4738',
   },
   {
+    id: 'exo',
+    name: 'EXO',
+    city: 'Montreal',
+    country: 'Canada',
+    url: 'https://exo.quebec/xdata/trains/google_transit.zip',
+  },
+  {
     id: 'saint-john-transit',
     name: 'Saint John Transit',
     city: 'Saint John',
@@ -45,13 +52,6 @@ const FEEDS: FeedEntry[] = [
     city: 'Toronto',
     country: 'Canada',
     url: 'https://assets.metrolinx.com/raw/upload/Documents/Metrolinx/Open%20Data/UP-GTFS.zip',
-  },
-  {
-    id: 'roam-transit',
-    name: 'Roam Transit',
-    city: 'Banff',
-    country: 'Canada',
-    url: 'https://data.trilliumtransit.com/gtfs/roamtransit-banff-ab-ca/roamtransit-banff-ab-ca.zip',
   }
 ];
 

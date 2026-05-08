@@ -76,7 +76,7 @@ export function FeedPicker({ compact = false }: { compact?: boolean }) {
       onClick={handleLoad}
       disabled={!selectedId || fetching}
       className={[
-        'px-4 py-2 rounded-lg text-sm font-semibold transition-colors whitespace-nowrap',
+        'w-full sm:w-auto px-4 py-2 rounded-lg text-sm font-semibold transition-colors',
         'bg-[var(--color-brand)] text-white',
         !selectedId || fetching
           ? 'opacity-40 cursor-not-allowed'
@@ -89,9 +89,9 @@ export function FeedPicker({ compact = false }: { compact?: boolean }) {
 
   if (compact) {
     return (
-      <div className="flex items-center gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
         {select}
-        {button}
+        <div className="sm:flex-none">{button}</div>
         {error && <p className="text-sm text-red-500">{error}</p>}
       </div>
     );
@@ -106,9 +106,9 @@ export function FeedPicker({ compact = false }: { compact?: boolean }) {
         </span>
         <div className="flex-1 h-px bg-[var(--color-border)]" />
       </div>
-      <div className="flex items-center gap-2 w-full max-w-lg">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full max-w-lg">
         {select}
-        {button}
+        <div className="sm:flex-none">{button}</div>
       </div>
       {error && <p className="text-sm text-red-500">{error}</p>}
     </div>
