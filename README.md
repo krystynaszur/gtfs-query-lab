@@ -6,7 +6,7 @@ All SQL querying runs entirely in the browser (WebAssembly SQLite via [sql.js](h
 
 Built as a portfolio piece to demonstrate practical knowledge of query performance on real-world datasets.
 
-**Live demo:** [gtfs-workbench-krystynaszurs-projects.vercel.app](https://gtfs-workbench-93cbcrfmm-krystynaszurs-projects.vercel.app/)
+**Live demo:** [gtfs-workbench-krystynaszurs-projects.vercel.app](https://gtfs-workbench-krystynaszurs-projects.vercel.app/)
 
 ![GTFS Workbench — Route Map tab](docs/screenshot.gif)
 
@@ -235,8 +235,10 @@ Set these environment variables in Vercel → Project → Settings → Environme
 
 1. New project → Deploy from GitHub → select this repo
 2. Set **Root Directory** to `backend`
-3. Add environment variable: `CORS_VERCEL_SLUG` = your Vercel team slug (see below)
-4. Railway injects `PORT` automatically — `main.ts` reads it with `process.env.PORT ?? 3001`
+3. Add environment variables:
+   - `PORT` = `3001`
+   - `CORS_VERCEL_SLUG` = your Vercel team slug (see below)
+4. Service → Settings → Networking → **Generate Domain** → enter port `3001`
 
 Railway auto-detects Node.js, runs `npm install` + `npm run build` + `npm run start`, and assigns a public URL.
 
